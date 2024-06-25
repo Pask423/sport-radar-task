@@ -18,7 +18,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static com.ps.board.model.Game.DEFAULT_GAME_COMPARATOR;
+import static com.ps.board.GameComparator.DEFAULT;
 
 public class DefaultScoreBoard implements ScoreBoard {
 
@@ -102,7 +102,7 @@ public class DefaultScoreBoard implements ScoreBoard {
         List<Game> games = store.getAll()
                 .stream()
                 .map(gameStateMapper::toGame)
-                .sorted(DEFAULT_GAME_COMPARATOR)
+                .sorted(DEFAULT)
                 .toList();
         return new ScoreBoardSummary(games);
     }

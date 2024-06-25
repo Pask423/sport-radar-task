@@ -49,7 +49,8 @@ public interface ScoreBoard {
 
     /**
      * Retrieves a summary of all ongoing games.
-     * The games with the same total score will be returned ordered by the most recently started match in the scoreboard
+     * The games with the same total score will be returned ordered
+     * by the most recently started match in the scoreboard
      *
      * @return a {@link ScoreBoardSummary} object containing the summary of games in progress
      */
