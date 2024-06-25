@@ -13,7 +13,10 @@ import com.ps.store.GamesStore;
 import com.ps.time.TimeProvider;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static com.ps.board.model.Game.DEFAULT_GAME_COMPARATOR;
 
@@ -22,20 +25,31 @@ public class DefaultScoreBoard implements ScoreBoard {
     private final GamesStore store;
     private final TimeProvider timeProvider;
     private final GameStateMapper gameStateMapper;
+    private final Map<UUID, ReentrantLock> gamesLock;
+    private final Map<String, UUID> gamesIdentifiersToId;
 
     public DefaultScoreBoard(GamesStore store, TimeProvider timeProvider) {
         this.store = store;
-        this.gameStateMapper = new GameStateMapper();
         this.timeProvider = timeProvider;
+        this.gameStateMapper = new GameStateMapper();
+        this.gamesLock = new ConcurrentHashMap<>();
+        this.gamesIdentifiersToId = new ConcurrentHashMap<>();
     }
 
     @Override
     public NewGame startGame(String homeTeam, String awayTeam) {
         validateTeam(homeTeam, "Home team cannot be empty");
         validateTeam(awayTeam, "Away team cannot be empty");
-        GameState initial = gameStateMapper.initial(UUID.randomUUID(), homeTeam, awayTeam, timeProvider.now());
-        GameState gameState = store.create(initial);
-        return gameStateMapper.toNewGame(gameState);
+        UUID gameId = gamesIdentifiersToId.computeIfAbsent(homeTeam.concat(awayTeam), id -> UUID.randomUUID());
+        ReentrantLock lock = gamesLock.computeIfAbsent(gameId, id -> new ReentrantLock());
+        try {
+            lock.lock();
+            GameState initial = gameStateMapper.initial(gameId, homeTeam, awayTeam, timeProvider.now());
+            GameState gameState = store.create(initial);
+            return gameStateMapper.toNewGame(gameState);
+        } finally {
+            lock.unlock();
+        }
     }
 
     private void validateTeam(String team, String message) {
@@ -47,11 +61,17 @@ public class DefaultScoreBoard implements ScoreBoard {
     @Override
     public Game updateScore(UUID gameId, int homeTeamScore, int awayTeamScore) {
         validateGameId(gameId);
-        return store.get(gameId)
-                .map(gameState -> gameState.updateScore(homeTeamScore, awayTeamScore))
-                .map(store::update)
-                .map(gameStateMapper::toGame)
-                .orElseThrow(() -> new GameNotFoundException(gameId));
+        ReentrantLock lock = gamesLock.computeIfAbsent(gameId, id -> new ReentrantLock());
+        try {
+            lock.lock();
+            return store.get(gameId)
+                    .map(gameState -> gameState.updateScore(homeTeamScore, awayTeamScore))
+                    .map(store::update)
+                    .map(gameStateMapper::toGame)
+                    .orElseThrow(() -> new GameNotFoundException(gameId));
+        } finally {
+            lock.unlock();
+        }
     }
 
     private void validateGameId(UUID gameId) {
@@ -63,10 +83,18 @@ public class DefaultScoreBoard implements ScoreBoard {
     @Override
     public FinishedGame finishGame(UUID gameId) {
         validateGameId(gameId);
-        GameState state = store.get(gameId)
-                .map(game -> store.delete(gameId))
-                .orElseThrow(() -> new GameNotFoundException(gameId));
-        return gameStateMapper.toFinishedGame(state);
+        ReentrantLock lock = gamesLock.computeIfAbsent(gameId, id -> new ReentrantLock());
+        try {
+            lock.lock();
+            GameState state = store.get(gameId)
+                    .map(e -> store.delete(gameId))
+                    .orElseThrow(() -> new GameNotFoundException(gameId));
+
+            gamesIdentifiersToId.remove(state.toIdentifier());
+            return gameStateMapper.toFinishedGame(state);
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override

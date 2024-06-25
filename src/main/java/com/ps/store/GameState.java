@@ -29,6 +29,10 @@ public class GameState {
         return new GameState(this.gameId, this.homeTeam, homeTeamScore, this.awayTeam, awayTeamScore, this.gameStart);
     }
 
+    public String toIdentifier() {
+        return this.homeTeam.concat(this.awayTeam);
+    }
+
     @Override
     public String toString() {
         return "GameState{" +
