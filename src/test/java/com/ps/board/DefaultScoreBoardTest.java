@@ -6,10 +6,12 @@ import com.ps.board.model.Game;
 import com.ps.board.model.NewGame;
 import com.ps.board.model.ScoreBoardSummary;
 import com.ps.store.GamesStore;
+import com.ps.store.InMemoryGamesStore;
 import com.ps.time.DefaultTimeProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,10 +21,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 public class DefaultScoreBoardTest {
 
     private ScoreBoard scoreBoard;
-    private GamesStore store;
 
     @BeforeEach
     public void setUp() {
+        GamesStore store = new InMemoryGamesStore(new HashMap<>());
         scoreBoard = new DefaultScoreBoard(store, new DefaultTimeProvider());
     }
 
