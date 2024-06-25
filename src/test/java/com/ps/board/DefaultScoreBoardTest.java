@@ -1,18 +1,30 @@
 package com.ps.board;
 
+import com.ps.board.exceptions.GameNotFoundException;
 import com.ps.board.model.FinishedGame;
 import com.ps.board.model.Game;
 import com.ps.board.model.NewGame;
 import com.ps.board.model.ScoreBoardSummary;
+import com.ps.store.GamesStore;
+import com.ps.time.DefaultTimeProvider;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class DefaultScoreBoardTest {
 
     private ScoreBoard scoreBoard;
+    private GamesStore store;
+
+    @BeforeEach
+    public void setUp() {
+        scoreBoard = new DefaultScoreBoard(store, new DefaultTimeProvider());
+    }
 
     @Test
     public void testStartGame() {
@@ -48,6 +60,16 @@ public class DefaultScoreBoardTest {
         assertThat(updatedGame.homeTeamScore()).isEqualTo(homeTeamScore);
     }
 
+    @Test
+    public void testUpdateNotExisting() {
+        // When
+        UUID nonExistingId = UUID.randomUUID();
+
+        // Then
+        assertThatThrownBy(() -> scoreBoard.updateScore(nonExistingId, 0, 0))
+                .isInstanceOf(GameNotFoundException.class);
+    }
+
 
     @Test
     public void testFinishGame() {
@@ -79,9 +101,19 @@ public class DefaultScoreBoardTest {
         // Then
         assertThat(finishedGame).isNotNull();
         assertThat(finishedGame.awayTeam()).isEqualTo(awayTeam);
-        assertThat(finishedGame.awayTeamScore()).isEqualTo(0);
+        assertThat(finishedGame.awayTeamScore()).isZero();
         assertThat(finishedGame.homeTeam()).isEqualTo(homeTeam);
-        assertThat(finishedGame.homeTeamScore()).isEqualTo(0);
+        assertThat(finishedGame.homeTeamScore()).isZero();
+    }
+
+    @Test
+    public void testFinishedNotExisting() {
+        // When
+        UUID nonExistingId = UUID.randomUUID();
+
+        // Then
+        assertThatThrownBy(() -> scoreBoard.finishGame(nonExistingId))
+                .isInstanceOf(GameNotFoundException.class);
     }
 
     @Test
