@@ -1,5 +1,7 @@
 package com.ps.board;
 
+import com.ps.board.exceptions.EmptyTeamException;
+import com.ps.board.exceptions.GameIdNullException;
 import com.ps.board.exceptions.GameNotFoundException;
 import com.ps.board.model.FinishedGame;
 import com.ps.board.model.Game;
@@ -44,6 +46,20 @@ public class DefaultScoreBoardTest {
     }
 
     @Test
+    public void testStartWithNull() {
+        // Then
+        assertThatThrownBy(() -> scoreBoard.startGame(null, "Test"))
+                .isInstanceOf(EmptyTeamException.class);
+    }
+
+    @Test
+    public void testStartWithEmpty() {
+        // Then
+        assertThatThrownBy(() -> scoreBoard.startGame("Test", " "))
+                .isInstanceOf(EmptyTeamException.class);
+    }
+
+    @Test
     public void testUpdateScore() {
         // Given
         String homeTeam = "PL";
@@ -63,6 +79,13 @@ public class DefaultScoreBoardTest {
     }
 
     @Test
+    public void testUpdateNull() {
+        // Then
+        assertThatThrownBy(() -> scoreBoard.updateScore(null, 0, 0))
+                .isInstanceOf(GameIdNullException.class);
+    }
+
+    @Test
     public void testUpdateNotExisting() {
         // When
         UUID nonExistingId = UUID.randomUUID();
@@ -71,7 +94,6 @@ public class DefaultScoreBoardTest {
         assertThatThrownBy(() -> scoreBoard.updateScore(nonExistingId, 0, 0))
                 .isInstanceOf(GameNotFoundException.class);
     }
-
 
     @Test
     public void testFinishGame() {
@@ -88,6 +110,15 @@ public class DefaultScoreBoardTest {
 
         // Then
         assertThat(finishedGame).isNotNull();
+        assertThatThrownBy(() -> scoreBoard.updateScore(newGame.gameId(), 0, 0))
+                .isInstanceOf(GameNotFoundException.class);
+    }
+
+    @Test
+    public void nullFinishTest() {
+        // Then
+        assertThatThrownBy(() -> scoreBoard.finishGame(null))
+                .isInstanceOf(GameIdNullException.class);
     }
 
     @Test
@@ -102,6 +133,8 @@ public class DefaultScoreBoardTest {
 
         // Then
         assertThat(finishedGame).isNotNull();
+        assertThatThrownBy(() -> scoreBoard.updateScore(newGame.gameId(), 0, 0))
+                .isInstanceOf(GameNotFoundException.class);
         assertThat(finishedGame.awayTeam()).isEqualTo(awayTeam);
         assertThat(finishedGame.awayTeamScore()).isZero();
         assertThat(finishedGame.homeTeam()).isEqualTo(homeTeam);
