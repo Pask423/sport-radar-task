@@ -31,7 +31,7 @@ public class DefaultScoreBoardTest {
     }
 
     @Test
-    public void testStartGame() {
+    public void startGameTest() {
         // Given
         String homeTeam = "PL";
         String awayTeam = "BEL";
@@ -46,21 +46,21 @@ public class DefaultScoreBoardTest {
     }
 
     @Test
-    public void testStartWithNull() {
+    public void startWithNullTest() {
         // Then
         assertThatThrownBy(() -> scoreBoard.startGame(null, "Test"))
                 .isInstanceOf(EmptyTeamException.class);
     }
 
     @Test
-    public void testStartWithEmpty() {
+    public void startWithEmptyTest() {
         // Then
         assertThatThrownBy(() -> scoreBoard.startGame("Test", " "))
                 .isInstanceOf(EmptyTeamException.class);
     }
 
     @Test
-    public void testUpdateScore() {
+    public void updateScoreTest() {
         // Given
         String homeTeam = "PL";
         String awayTeam = "BEL";
@@ -79,14 +79,14 @@ public class DefaultScoreBoardTest {
     }
 
     @Test
-    public void testUpdateNull() {
+    public void updateNullTest() {
         // Then
         assertThatThrownBy(() -> scoreBoard.updateScore(null, 0, 0))
                 .isInstanceOf(GameIdNullException.class);
     }
 
     @Test
-    public void testUpdateNotExisting() {
+    public void updateNotExistingTest() {
         // When
         UUID nonExistingId = UUID.randomUUID();
 
@@ -96,21 +96,22 @@ public class DefaultScoreBoardTest {
     }
 
     @Test
-    public void testFinishGame() {
+    public void finishGameTest() {
         // Given
         String homeTeam = "PL";
         String awayTeam = "BEL";
         int homeTeamScore = 4;
         int awayTeamScore = 2;
         NewGame newGame = scoreBoard.startGame(homeTeam, awayTeam);
-        scoreBoard.updateScore(newGame.gameId(), homeTeamScore, awayTeamScore);
+        UUID gameId = newGame.gameId();
+        scoreBoard.updateScore(gameId, homeTeamScore, awayTeamScore);
 
         // When
-        FinishedGame finishedGame = scoreBoard.finishGame(newGame.gameId());
+        FinishedGame finishedGame = scoreBoard.finishGame(gameId);
 
         // Then
         assertThat(finishedGame).isNotNull();
-        assertThatThrownBy(() -> scoreBoard.updateScore(newGame.gameId(), 0, 0))
+        assertThatThrownBy(() -> scoreBoard.updateScore(gameId, 0, 0))
                 .isInstanceOf(GameNotFoundException.class);
     }
 
@@ -127,13 +128,14 @@ public class DefaultScoreBoardTest {
         String homeTeam = "PL";
         String awayTeam = "BEL";
         NewGame newGame = scoreBoard.startGame(homeTeam, awayTeam);
+        UUID gameId = newGame.gameId();
 
         // When
-        FinishedGame finishedGame = scoreBoard.finishGame(newGame.gameId());
+        FinishedGame finishedGame = scoreBoard.finishGame(gameId);
 
         // Then
         assertThat(finishedGame).isNotNull();
-        assertThatThrownBy(() -> scoreBoard.updateScore(newGame.gameId(), 0, 0))
+        assertThatThrownBy(() -> scoreBoard.updateScore(gameId, 0, 0))
                 .isInstanceOf(GameNotFoundException.class);
         assertThat(finishedGame.awayTeam()).isEqualTo(awayTeam);
         assertThat(finishedGame.awayTeamScore()).isZero();
@@ -142,7 +144,7 @@ public class DefaultScoreBoardTest {
     }
 
     @Test
-    public void testFinishedNotExisting() {
+    public void finishedNotExistingTest() {
         // When
         UUID nonExistingId = UUID.randomUUID();
 
@@ -152,7 +154,7 @@ public class DefaultScoreBoardTest {
     }
 
     @Test
-    public void testGetSummary() {
+    public void getSummaryTest() {
         // Given
         NewGame newGame = scoreBoard.startGame("Mexico", "Canada");
         scoreBoard.updateScore(newGame.gameId(), 0, 5);

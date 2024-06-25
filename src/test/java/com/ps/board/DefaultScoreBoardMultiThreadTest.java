@@ -30,20 +30,21 @@ public class DefaultScoreBoardMultiThreadTest {
     @RepeatedTest(100)
     public void testConcurrentGameCreation() throws ExecutionException, InterruptedException, TimeoutException {
         // Given
-        CompletableFuture<NewGame> futNewGame1 = shootRequest("PL", "ENG");
-        CompletableFuture<NewGame> futNewGame2 = shootRequest("PL", "ENG");
+        CompletableFuture<NewGame> startRequest1 = startRequest("PL", "ENG");
+        CompletableFuture<NewGame> startRequest2 = startRequest("PL", "ENG");
 
         // When
-        NewGame newGame1 = futNewGame1.get(1, TimeUnit.SECONDS);
-        NewGame newGame2 = futNewGame2.get(1, TimeUnit.SECONDS);
+        NewGame newGame1 = startRequest1.get(1, TimeUnit.SECONDS);
+        NewGame newGame2 = startRequest2.get(1, TimeUnit.SECONDS);
 
         // Then
         assertThat(newGame1.gameId())
-                .as("Id of two games should always be the same. If the concurrency is not working properly, then we can expect that it will different as we are recreating game in concurrent manner.")
+                .as("Id of two games should always be the same. If the concurrency is not working properly," +
+                        " then we can expect that it will different as we are recreating game in concurrent manner.")
                 .isEqualTo(newGame2.gameId());
     }
 
-    private CompletableFuture<NewGame> shootRequest(String homeTeam, String awayTeam) {
+    private CompletableFuture<NewGame> startRequest(String homeTeam, String awayTeam) {
         return CompletableFuture.supplyAsync(() -> scoreBoard.startGame(homeTeam, awayTeam));
     }
 
@@ -51,29 +52,29 @@ public class DefaultScoreBoardMultiThreadTest {
     public void testConcurrentFinish() throws InterruptedException, TimeoutException {
         // Given
         NewGame newGame = scoreBoard.startGame("ENG", "GER");
-        CompletableFuture<FinishedGame> futNewGame1 = finishRequest(newGame.gameId());
-        CompletableFuture<FinishedGame> futNewGame2 = finishRequest(newGame.gameId());
-        CompletableFuture<FinishedGame> futNewGame3 = finishRequest(newGame.gameId());
+        CompletableFuture<FinishedGame> finishRequest1 = finishRequest(newGame.gameId());
+        CompletableFuture<FinishedGame> finishRequest2 = finishRequest(newGame.gameId());
+        CompletableFuture<FinishedGame> finishRequest3 = finishRequest(newGame.gameId());
         ExecutionException executionException = null;
         int exceptionNumber = 0;
 
         // When
         try {
-            FinishedGame finishedGame = futNewGame1.get(1, TimeUnit.SECONDS);
+            finishRequest1.get(1, TimeUnit.SECONDS);
         } catch (ExecutionException e) {
             executionException = e;
             exceptionNumber++;
         }
 
         try {
-            FinishedGame finishedGame = futNewGame2.get(1, TimeUnit.SECONDS);
+            finishRequest2.get(1, TimeUnit.SECONDS);
         } catch (ExecutionException e) {
             executionException = e;
             exceptionNumber++;
         }
 
         try {
-            FinishedGame finishedGame = futNewGame3.get(1, TimeUnit.SECONDS);
+            finishRequest3.get(1, TimeUnit.SECONDS);
         } catch (ExecutionException e) {
             executionException = e;
             exceptionNumber++;
