@@ -1,13 +1,14 @@
 package com.ps.board;
 
-import com.ps.board.exceptions.EmptyTeamException;
 import com.ps.board.exceptions.GameIdNullException;
 import com.ps.board.exceptions.GameNotFoundException;
 import com.ps.board.exceptions.NegativeScoreException;
+import com.ps.board.exceptions.SameTeamsGameException;
 import com.ps.board.model.FinishedGame;
 import com.ps.board.model.Game;
 import com.ps.board.model.NewGame;
 import com.ps.board.model.ScoreBoardSummary;
+import com.ps.board.validation.TeamValidator;
 import com.ps.store.GameState;
 import com.ps.store.GameStateMapper;
 import com.ps.store.GamesStore;
@@ -26,6 +27,7 @@ public class DefaultScoreBoard implements ScoreBoard {
     private final GamesStore store;
     private final TimeProvider timeProvider;
     private final GameStateMapper gameStateMapper;
+    private final TeamValidator teamValidator;
     private final Map<UUID, ReentrantLock> gamesLock;
     private final Map<String, UUID> gamesIdentifiersToId;
 
@@ -33,15 +35,21 @@ public class DefaultScoreBoard implements ScoreBoard {
         this.store = store;
         this.timeProvider = timeProvider;
         this.gameStateMapper = new GameStateMapper();
+        this.teamValidator = new TeamValidator();
         this.gamesLock = new ConcurrentHashMap<>();
         this.gamesIdentifiersToId = new ConcurrentHashMap<>();
     }
 
     @Override
     public NewGame startGame(String homeTeam, String awayTeam) {
-        validateTeam(homeTeam, "Home team cannot be empty");
-        validateTeam(awayTeam, "Away team cannot be empty");
-        UUID gameId = gamesIdentifiersToId.computeIfAbsent(homeTeam.concat(awayTeam), id -> UUID.randomUUID());
+        teamValidator.validateTeam(homeTeam);
+        teamValidator.validateTeam(awayTeam);
+        String homeTeamName = normalizeTeamName(homeTeam);
+        String awayTeamName = normalizeTeamName(awayTeam);
+        if (homeTeamName.equals(awayTeamName)) {
+            throw new SameTeamsGameException();
+        }
+        UUID gameId = gamesIdentifiersToId.computeIfAbsent(homeTeamName.concat(awayTeamName), id -> UUID.randomUUID());
         ReentrantLock lock = gamesLock.computeIfAbsent(gameId, id -> new ReentrantLock());
         try {
             lock.lock();
@@ -53,10 +61,8 @@ public class DefaultScoreBoard implements ScoreBoard {
         }
     }
 
-    private void validateTeam(String team, String message) {
-        if (team == null || team.isBlank()) {
-            throw new EmptyTeamException(message);
-        }
+    private static String normalizeTeamName(String homeTeam) {
+        return homeTeam.toLowerCase().trim();
     }
 
     @Override

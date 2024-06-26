@@ -1,9 +1,6 @@
 package com.ps.board;
 
-import com.ps.board.exceptions.EmptyTeamException;
-import com.ps.board.exceptions.GameIdNullException;
-import com.ps.board.exceptions.GameNotFoundException;
-import com.ps.board.exceptions.NegativeScoreException;
+import com.ps.board.exceptions.*;
 import com.ps.board.model.FinishedGame;
 import com.ps.board.model.Game;
 import com.ps.board.model.NewGame;
@@ -58,6 +55,13 @@ public class DefaultScoreBoardTest {
         // Then
         assertThatThrownBy(() -> scoreBoard.startGame("Test", " "))
                 .isInstanceOf(EmptyTeamException.class);
+    }
+
+    @Test
+    public void startWithSameTeamsTest() {
+        // Then
+        assertThatThrownBy(() -> scoreBoard.startGame("Test", "Test"))
+                .isInstanceOf(SameTeamsGameException.class);
     }
 
     @Test

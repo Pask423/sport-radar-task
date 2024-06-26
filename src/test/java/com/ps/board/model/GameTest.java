@@ -1,6 +1,5 @@
 package com.ps.board.model;
 
-import com.ps.store.GameState;
 import org.junit.jupiter.api.Test;
 
 import java.time.OffsetDateTime;
