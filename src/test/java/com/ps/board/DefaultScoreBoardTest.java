@@ -3,6 +3,7 @@ package com.ps.board;
 import com.ps.board.exceptions.EmptyTeamException;
 import com.ps.board.exceptions.GameIdNullException;
 import com.ps.board.exceptions.GameNotFoundException;
+import com.ps.board.exceptions.NegativeScoreException;
 import com.ps.board.model.FinishedGame;
 import com.ps.board.model.Game;
 import com.ps.board.model.NewGame;
@@ -93,6 +94,18 @@ public class DefaultScoreBoardTest {
         // Then
         assertThatThrownBy(() -> scoreBoard.updateScore(nonExistingId, 0, 0))
                 .isInstanceOf(GameNotFoundException.class);
+    }
+
+    @Test
+    public void updateScoreWithNegativeTest() {
+        // Given
+        String homeTeam = "PL";
+        String awayTeam = "BEL";
+        NewGame newGame = scoreBoard.startGame(homeTeam, awayTeam);
+
+        // Then
+        assertThatThrownBy(() -> scoreBoard.updateScore(newGame.gameId(), 0, -1))
+                .isInstanceOf(NegativeScoreException.class);
     }
 
     @Test
