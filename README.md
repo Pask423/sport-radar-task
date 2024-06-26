@@ -98,7 +98,7 @@ However, as the code is supposed to be as simple as possible I decide to go with
 Firstly, it is by far the simples appcache to indicating failure. 
 I could have used some rich model for return types, but I decided that it would be too complex as for the spirit of this task.
 
-Secondly, I didn't want to introduce dependency to vavr, to get Either, but it will add vavr as transitive dependency fot the users.
+Secondly, I didn't want to introduce dependency to vavr, to get Either, as it will add vavr as transitive dependency fot the users.
 Again, I could have written my own Either like class, but it will force the users to relay on this handling model, which is still not a common practise in Java. 
 
 ### Concurrency support
