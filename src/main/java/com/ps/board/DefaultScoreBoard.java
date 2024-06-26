@@ -3,6 +3,7 @@ package com.ps.board;
 import com.ps.board.exceptions.EmptyTeamException;
 import com.ps.board.exceptions.GameIdNullException;
 import com.ps.board.exceptions.GameNotFoundException;
+import com.ps.board.exceptions.NegativeScoreException;
 import com.ps.board.model.FinishedGame;
 import com.ps.board.model.Game;
 import com.ps.board.model.NewGame;
@@ -61,6 +62,8 @@ public class DefaultScoreBoard implements ScoreBoard {
     @Override
     public Game updateScore(UUID gameId, int homeTeamScore, int awayTeamScore) {
         validateGameId(gameId);
+        checkNonNegative(homeTeamScore, "Home score cannot be negative");
+        checkNonNegative(awayTeamScore, "Away score cannot be negative");
         ReentrantLock lock = gamesLock.computeIfAbsent(gameId, id -> new ReentrantLock());
         try {
             lock.lock();
@@ -75,6 +78,12 @@ public class DefaultScoreBoard implements ScoreBoard {
             }
         } finally {
             lock.unlock();
+        }
+    }
+
+    private void checkNonNegative(int score, String message) {
+        if (score < 0) {
+            throw new NegativeScoreException(message);
         }
     }
 
