@@ -1,8 +1,6 @@
 package com.ps.board;
 
-import com.ps.board.exceptions.EmptyTeamException;
-import com.ps.board.exceptions.GameIdNullException;
-import com.ps.board.exceptions.GameNotFoundException;
+import com.ps.board.exceptions.*;
 import com.ps.board.model.FinishedGame;
 import com.ps.board.model.Game;
 import com.ps.board.model.NewGame;
@@ -21,7 +19,9 @@ public interface ScoreBoard {
      * @param homeTeam the name of the home team
      * @param awayTeam the name of the away team
      * @return a {@link NewGame} object representing the newly started game
-     * @throws EmptyTeamException for null gameId value
+     * @throws SameTeamsGameException while attempting to start game with same teams
+     * @throws EmptyTeamException when one of the teams is null or blank
+     * @throws NotAllowedCharsInTeam when one of the teams contains special characters or numbers
      */
     NewGame startGame(String homeTeam, String awayTeam);
 
@@ -34,6 +34,7 @@ public interface ScoreBoard {
      * @return a {@link Game} object representing the updated game
      * @throws GameIdNullException for null gameId value
      * @throws GameNotFoundException for non-existing game
+     * @throws NegativeScoreException for negative score values
      */
     Game updateScore(UUID gameId, int homeTeamScore, int awayTeamScore);
 

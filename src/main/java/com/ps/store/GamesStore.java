@@ -5,7 +5,7 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Interface for managing game states in a games store.
+ * Interface for the state of the games store.
  */
 public interface GamesStore {
 
