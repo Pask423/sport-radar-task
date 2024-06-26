@@ -64,11 +64,15 @@ public class DefaultScoreBoard implements ScoreBoard {
         ReentrantLock lock = gamesLock.computeIfAbsent(gameId, id -> new ReentrantLock());
         try {
             lock.lock();
-            return store.get(gameId)
-                    .map(gameState -> gameState.updateScore(homeTeamScore, awayTeamScore))
-                    .map(store::update)
-                    .map(gameStateMapper::toGame)
+            GameState gameState = store.get(gameId)
                     .orElseThrow(() -> new GameNotFoundException(gameId));
+            if (gameState.scoreUnchanged(homeTeamScore, awayTeamScore)) {
+                return gameStateMapper.toGame(gameState);
+            } else {
+                GameState stateWithNewScore = gameState.updateScore(homeTeamScore, awayTeamScore);
+                GameState updateState = store.update(stateWithNewScore);
+                return gameStateMapper.toGame(updateState);
+            }
         } finally {
             lock.unlock();
         }

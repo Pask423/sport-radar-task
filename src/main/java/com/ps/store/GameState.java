@@ -29,6 +29,10 @@ public class GameState {
         return new GameState(this.gameId, this.homeTeam, homeTeamScore, this.awayTeam, awayTeamScore, this.gameStart);
     }
 
+    public boolean scoreUnchanged(int homeTeamScore, int awayTeamScore) {
+        return this.homeTeamScore == homeTeamScore && this.awayTeamScore == awayTeamScore;
+    }
+
     public String toIdentifier() {
         return this.homeTeam.concat(this.awayTeam);
     }

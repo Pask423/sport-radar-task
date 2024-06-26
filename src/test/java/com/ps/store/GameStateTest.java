@@ -22,4 +22,29 @@ public class GameStateTest {
         // Then
         assertThat(identifier).isEqualTo("PLDE");
     }
+
+    @Test
+    public void scoreUnchangedTest() {
+        // Given
+        GameState initial = GameState.initial(UUID.randomUUID(), "PL", "DE", OffsetDateTime.now());
+
+        // When
+        boolean unchanged = initial.scoreUnchanged(0, 0);
+
+        // Then
+        assertThat(unchanged).isTrue();
+    }
+
+    @Test
+    public void scoreUnchangedWithUpdateTest() {
+        // Given
+        GameState state = GameState.initial(UUID.randomUUID(), "PL", "DE", OffsetDateTime.now())
+                .updateScore(3, 4);
+
+        // When
+        boolean unchanged = state.scoreUnchanged(4, 4);
+
+        // Then
+        assertThat(unchanged).isFalse();
+    }
 }
