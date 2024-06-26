@@ -113,6 +113,26 @@ public class DefaultScoreBoardTest {
     }
 
     @Test
+    public void updateWithSmallerShouldPassTest() {
+        // Given
+        String homeTeam = "PL";
+        String awayTeam = "BEL";
+        int homeTeamScore = 3;
+        int awayTeamScore = 1;
+        NewGame newGame = scoreBoard.startGame(homeTeam, awayTeam);
+        scoreBoard.updateScore(newGame.gameId(), 2, 2);
+
+        // When
+        Game updatedGame = scoreBoard.updateScore(newGame.gameId(), homeTeamScore, awayTeamScore);
+
+        // Then
+        assertThat(updatedGame.awayTeam()).isEqualTo(awayTeam);
+        assertThat(updatedGame.awayTeamScore()).isEqualTo(awayTeamScore);
+        assertThat(updatedGame.homeTeam()).isEqualTo(homeTeam);
+        assertThat(updatedGame.homeTeamScore()).isEqualTo(homeTeamScore);
+    }
+
+    @Test
     public void finishGameTest() {
         // Given
         String homeTeam = "PL";
