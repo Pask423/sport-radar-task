@@ -156,16 +156,11 @@ public class DefaultScoreBoardTest {
     @Test
     public void getSummaryTest() {
         // Given
-        NewGame newGame = scoreBoard.startGame("Mexico", "Canada");
-        scoreBoard.updateScore(newGame.gameId(), 0, 5);
-        NewGame newGame1 = scoreBoard.startGame("Spain", "Brazil");
-        scoreBoard.updateScore(newGame1.gameId(), 10, 2);
-        NewGame newGame2 = scoreBoard.startGame("Germany", "France");
-        scoreBoard.updateScore(newGame2.gameId(), 2, 2);
-        NewGame newGame3 = scoreBoard.startGame("Uruguay", "Italy");
-        scoreBoard.updateScore(newGame3.gameId(), 6, 6);
-        NewGame newGame4 = scoreBoard.startGame("Argentina", "Australia");
-        scoreBoard.updateScore(newGame4.gameId(), 3, 1);
+        setupGame("Mexico", 0,"Canada", 5);
+        setupGame("Spain", 10, "Brazil", 2);
+        setupGame("Germany", 2, "France", 2);
+        setupGame("Uruguay", 6, "Italy", 6);
+        setupGame("Argentina", 3, "Australia", 1);
 
         // When
         ScoreBoardSummary summary = scoreBoard.getSummary();
@@ -178,6 +173,11 @@ public class DefaultScoreBoardTest {
         compareGame(games.get(2), "Mexico", 0, "Canada", 5);
         compareGame(games.get(3), "Argentina", 3, "Australia", 1);
         compareGame(games.get(4), "Germany", 2, "France", 2);
+    }
+
+    private void setupGame(String homeTeam, int homeTeamScore, String awayTeam, int awayTeamScore) {
+        NewGame newGame = scoreBoard.startGame(homeTeam, awayTeam);
+        scoreBoard.updateScore(newGame.gameId(), homeTeamScore, awayTeamScore);
     }
 
     private void compareGame(Game game, String homeTeam, int homeTeamScore, String awayTeam, int awayTeamScore) {
